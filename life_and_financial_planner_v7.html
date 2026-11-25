@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วางแผนชีวิตและการเงินฉบับการ์ตูน (Easy Life & Money Planner)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt & Cloud-like friendly fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        comic: {
+                            yellow: '#FEF08A',
+                            orange: '#FFEDD5',
+                            pink: '#FCE7F3',
+                            blue: '#E0F2FE',
+                            green: '#DCFCE7',
+                            purple: '#F3E8FF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FFFDF7;
+            background-image: radial-gradient(#E5E7EB 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        /* Comic Card Shadow & Border */
+        .cartoon-card {
+            border: 3px solid #1E293B;
+            box-shadow: 5px 5px 0px #1E293B;
+            transition: all 0.2s ease;
+        }
+        
+        .cartoon-card-sm {
+            border: 2px solid #1E293B;
+            box-shadow: 3px 3px 0px #1E293B;
+        }
+
+        .cartoon-btn {
+            border: 2px solid #1E293B;
+            box-shadow: 3px 3px 0px #1E293B;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .cartoon-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #1E293B;
+        }
+
+        /* Fun Slider Style */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 14px;
+            cursor: pointer;
+            background: #E2E8F0;
+            border: 2px solid #1E293B;
+            border-radius: 9999px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: #FF6B6B;
+            border: 2px solid #1E293B;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -9px;
+            box-shadow: 2px 2px 0px #1E293B;
+            transition: transform 0.1s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #FF5252;
+        }
+
+        /* ===== ช่องพิมพ์ตัวเลข: พิมพ์ได้ทั้ง "ต่อเดือน" และ "เลขใหญ่" ===== */
+        .num-field {
+            flex: 1 1 auto;
+            min-width: 0;
+            text-align: right;
+            font-family: inherit;
+            font-weight: 800;
+            color: #6B21A8;
+            background: #FFFFFF;
+            border: 2px solid #1E293B;
+            border-radius: 12px;
+            padding: 6px 12px;
+            box-shadow: 2px 2px 0px #1E293B;
+            outline: none;
+            transition: box-shadow 0.12s ease, transform 0.12s ease, background-color 0.15s ease;
+        }
+        .num-field:focus {
+            background-color: #FEF9C3;
+            box-shadow: 3px 3px 0px #FF6B6B;
+            transform: translate(-1px, -1px);
+        }
+
+        /* ===== การ์ด 3: กดเพื่อสไลด์เปิด/ปิดการ์ดเป้าหมายทรัพย์สินชีวิต ===== */
+        .toggle-card { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .toggle-card [data-no-toggle] { cursor: default; }
+        .toggle-card .toggle-bar {
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .toggle-card .toggle-bar:hover { background-color: #D8B4FE; }
+        .chevron { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+        .toggle-card.is-open .chevron { transform: rotate(180deg); }
+        @keyframes nudge {
+            0%, 100% { transform: translateY(-1px); }
+            50%      { transform: translateY(3px); }
+        }
+        .toggle-card:not(.is-open) .nudge { animation: nudge 1.4s ease-in-out infinite; }
+
+        /* ===== ลิ้นชักสไลด์: การ์ดเป้าหมายทรัพย์สินชีวิต ซ่อนอยู่หลังการ์ด 3 =====
+           - ความสูงของลิ้นชักขยาย/หดด้วย transition ของ height (JS วัดความสูงจริงให้ แล้วคืนเป็น auto ตอนอยู่นิ่ง)
+           - การ์ดยึดขอบล่างไว้กับลิ้นชัก (flex-end) ขอบล่างของการ์ดจึงเลื่อนลงมาจากใต้การ์ดด้านบน
+             พร้อมกับลิ้นชักเสมอ ส่วนที่ยังไม่โผล่ถูกซ่อนไว้ด้านบน */
+        .drawer {
+            height: 0;
+            overflow: hidden;
+            margin-right: -8px;          /* เผื่อเงาด้านขวาของการ์ดไม่ให้ถูกตัด */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            visibility: hidden;
+            position: relative;
+            z-index: 0;
+            transition: height 0.75s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.75s;
+        }
+        .drawer.is-open {
+            visibility: visible;
+            transition: height 0.75s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+        }
+        .drawer-clip { flex: none; }
+        .drawer-pad { padding: 2rem 8px 12px 0; }
+
+        /* ===== แถว 2: การ์ด 2 + การ์ด 3 + ลิ้นชัก ===== */
+        .row2 { width: 100%; max-width: 62rem; margin-left: auto; margin-right: auto; }
+
+        /* ===== รายการ "ชื่อ - จำนวนเงินต่อเดือน" กดบวกเพิ่มได้ ===== */
+        .item-head { display: flex; gap: 6px; padding-bottom: 4px; font-size: 11px; font-weight: 700; color: #64748B; }
+        .item-head .h-name { flex: 1 1 0; padding-left: 28px; }
+        .item-head .h-amt  { flex: 0 0 112px; text-align: right; padding-right: 6px; }
+        .item-head .h-del  { flex: 0 0 28px; }
+        .item-list { display: flex; flex-direction: column; gap: 8px; }
+        .item-row { display: flex; align-items: center; gap: 6px; }
+        .item-emoji { flex: none; width: 22px; text-align: center; font-size: 16px; }
+        .item-name {
+            flex: 1 1 0;
+            min-width: 0;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 13px;
+            color: #0F172A;
+            background: #FFFFFF;
+            border: 2px solid #1E293B;
+            border-radius: 12px;
+            padding: 7px 10px;
+            outline: none;
+            box-shadow: 2px 2px 0px #1E293B;
+            transition: box-shadow 0.12s ease, transform 0.12s ease, background-color 0.15s ease;
+        }
+        .item-name::placeholder, .num-field::placeholder { color: #94A3B8; font-weight: 600; }
+        .item-name:focus { background-color: #FEF9C3; box-shadow: 3px 3px 0px #FF6B6B; transform: translate(-1px, -1px); }
+        .item-row .num-field { flex: 0 0 112px; width: 112px; font-size: 14px; padding: 7px 10px; }
+        .item-row .num-field.emerald { color: #047857; }
+        .item-del {
+            flex: none;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 13px;
+            line-height: 1;
+            color: #BE123C;
+            background: #FFE4E6;
+            border: 2px solid #1E293B;
+            border-radius: 9999px;
+            box-shadow: 2px 2px 0px #1E293B;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .item-del:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #1E293B; }
+        .add-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 13px;
+            color: #334155;
+            background: rgba(255, 255, 255, 0.75);
+            border: 2px dashed #1E293B;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+        }
+        .add-btn:hover { background: #FFFFFF; }
+        .add-btn:active { transform: translate(1px, 1px); }
+        .add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .item-empty { text-align: center; font-size: 12px; font-weight: 700; color: #94A3B8; padding: 8px 0; }
+        .item-row.is-new { animation: rowIn 0.25s cubic-bezier(0.2, 1, 0.3, 1) both; }
+        @keyframes rowIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        @media (max-width: 359px) {
+            .item-row { flex-wrap: wrap; }
+            .item-name { flex: 1 1 110px; }
+            .item-row .num-field { flex: 1 1 110px; width: auto; }
+        }
+
+        /* ===== ภาพการ์ดเงินสำรอง: 1 เดือน = 1 ใบ ===== */
+        .month-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .month-card {
+            border: 2px solid #1E293B;
+            border-radius: 12px;
+            box-shadow: 2px 2px 0px #1E293B;
+            padding: 6px 4px 7px;
+            text-align: center;
+            line-height: 1.2;
+            animation: cardPop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+        }
+        .month-card:nth-child(odd)  { rotate: -1.5deg; }
+        .month-card:nth-child(even) { rotate: 1.2deg; }
+        .month-card .mc-title { font-size: 10px; font-weight: 800; color: #475569; }
+        .month-card .mc-amt { font-size: 14px; font-weight: 900; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mc-0 { background: #FEF08A; } .mc-1 { background: #FFEDD5; } .mc-2 { background: #FCE7F3; }
+        .mc-3 { background: #E0F2FE; } .mc-4 { background: #DCFCE7; } .mc-5 { background: #F3E8FF; }
+        @keyframes cardPop { from { scale: 0.5; opacity: 0; } to { scale: 1; opacity: 1; } }
+
+        .balance { text-wrap: balance; }
+
+        /* ===== การ์ดที่ย่อไว้: กดหัวการ์ดแล้วรายละเอียดค่อยสไลด์ลงมา (🧮 แบ่งรายได้ / ⏳ ระยะเวลา) =====
+           ใช้ grid 0fr -> 1fr เพื่อให้ความสูงของรายละเอียดขยาย/หดตามเนื้อหาจริงโดยไม่ต้องวัดด้วย JS
+           ตอนซ่อน: visibility hidden + inert (JS) กัน Tab เข้าไปโดนของที่มองไม่เห็น */
+        .collapse-head {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            width: 100%; padding: 12px 16px;
+            font-family: inherit; text-align: center;
+            background: transparent; border: 0; border-radius: 14px;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.15s ease;
+        }
+        .collapse-head:hover { background-color: rgba(30, 41, 59, 0.06); }
+        .collapse-head:focus-visible { outline: 3px solid #FF6B6B; outline-offset: -3px; }
+        .collapse-hint { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: #64748B; }
+        .collapse-hint svg { width: 14px; height: 14px; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+        .collapse-hint .when-open { display: none; }
+        .collapse-head[aria-expanded="true"] .collapse-hint .when-open { display: inline; }
+        .collapse-head[aria-expanded="true"] .collapse-hint .when-closed { display: none; }
+        .collapse-head[aria-expanded="true"] .collapse-hint svg { transform: rotate(180deg); }
+        .collapse-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            visibility: hidden;
+            transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.5s;
+        }
+        .collapse-panel.is-open {
+            grid-template-rows: 1fr;
+            visibility: visible;
+            transition: grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s;
+        }
+        .collapse-inner { min-height: 0; overflow: hidden; }
+        .collapse-body {
+            padding: 0 16px 16px;
+            opacity: 0;
+            transform: translateY(-12px);
+            transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .collapse-panel.is-open .collapse-body { opacity: 1; transform: none; }
+
+        /* ===== จอกว้าง (>= 1536px): การ์ดเป้าหมายทรัพย์สินชีวิตสไลด์ออกไปทาง "ขวา" ของการ์ด 3 =====
+           แถวถูกจัดกึ่งกลาง พอลิ้นชักกว้างขึ้นการ์ด 2-3 จะขยับไปทางซ้ายเว้นที่ให้เอง
+           จอเล็กกว่านี้ไม่มีที่พอ จึงยังสไลด์ลงด้านล่างเหมือนเดิม */
+        @media (min-width: 1536px) {
+            .row2 { max-width: none; display: flex; justify-content: center; align-items: flex-start; }
+            .row2-grid { width: 62rem; flex: none; }
+            .drawer {
+                height: auto;
+                max-height: 0;               /* ปิดอยู่: ไม่กินที่ในแนวตั้ง (หน่วงไว้จนการ์ดสไลด์เข้าเสร็จก่อน) */
+                width: 0;
+                flex: none;
+                margin-right: 0;
+                flex-direction: row;
+                justify-content: flex-end;   /* ยึดการ์ดไว้ที่ขอบขวา ขอบขวาของการ์ดจึงนำออกมาก่อน */
+                transition: width 0.75s cubic-bezier(0.22, 1, 0.36, 1), max-height 0s linear 0.75s, visibility 0s linear 0.75s;
+            }
+            .drawer.is-open {
+                max-height: 4000px;          /* เปิดอยู่: สูงตามการ์ด (สลับทันทีตั้งแต่การ์ดยังกว้าง 0 จึงไม่เห็นการกระโดด) */
+                transition: width 0.75s cubic-bezier(0.22, 1, 0.36, 1), max-height 0s linear 0s, visibility 0s linear 0s;
+            }
+            .drawer-pad { padding: 0 8px 12px 2rem; }
+            .drawer .drawer-card.cartoon-card { width: 440px; padding: 1.5rem; }
+            .drawer .split-grid { grid-template-columns: minmax(0, 1fr); }
+            .drawer .split-title { font-size: 14px; }
+            .drawer .split-grid > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 8px; text-align: left; padding: 8px 12px; }
+            .drawer .split-grid > div > div:nth-child(3) { flex-basis: 100%; }
+            .chevron { transform: rotate(-90deg); }
+            .toggle-card.is-open .chevron { transform: rotate(90deg); }
+            .toggle-card:not(.is-open) .nudge { animation-name: nudgeX; }
+        }
+        @keyframes nudgeX {
+            0%, 100% { transform: rotate(-90deg) translateY(-1px); }
+            50%      { transform: rotate(-90deg) translateY(3px); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .drawer, .drawer-card.cartoon-card, .chevron, .collapse-panel, .collapse-body, .collapse-hint svg { transition: none !important; }
+            .nudge, .month-card, .item-row.is-new { animation: none !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 font-sans antialiased min-h-screen pb-16">
+
+    <!-- Header Section -->
+    <header class="max-w-5xl mx-auto pt-8 px-4 text-center">
+        <div class="inline-block bg-amber-300 text-slate-900 px-6 py-2 rounded-full cartoon-card font-extrabold text-xl sm:text-2xl mb-2 rotate-[-1deg]">
+            🎈 วางแผนชีวิตและการเงินฉบับง่ายมากๆ! 
+        </div>
+        <p class="text-sm sm:text-base text-slate-600 font-medium">ปรับลากตัวเลขสนุกๆ เพื่อดูภาพรวมชีวิตและเงินสำรองของคุณกันเลย ✨</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="px-4 pt-6 space-y-8">
+
+        <!-- ==========================================
+             ข้อ 1: ช่วงชีวิต 100 ปี (ตรงกลาง CENTER)
+             ========================================== -->
+        <section class="bg-white rounded-3xl p-6 sm:p-8 cartoon-card text-center max-w-3xl mx-auto">
+            <div class="inline-flex items-center gap-2 bg-sky-200 text-slate-900 px-4 py-1.5 rounded-full text-sm font-bold border-2 border-slate-800 mb-2">
+                <i class="fa-solid fa-face-smile text-lg text-amber-500"></i> แถวที่ 1
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">1. เลือกอายุปัจจุบันของคุณ ⏳</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mb-6">เลือกอายุเพื่อใช้ประกอบการวางแผนเป้าหมายชีวิต</p>
+
+            <!-- Slider Control -->
+            <div class="max-w-lg mx-auto mb-8 bg-sky-50 p-5 rounded-2xl cartoon-card-sm">
+                <div class="flex justify-between items-center mb-2">
+                    <label for="ageSlider" class="text-base font-bold text-slate-800">ลองเลือกอายุปัจจุบันของคุณ:</label>
+                    <span class="text-3xl font-black text-rose-500 bg-white px-3 py-1 rounded-xl border-2 border-slate-800 shadow-[2px_2px_0px_#1E293B]">
+                        <span id="currentAgeText">30</span> <span class="text-sm font-bold text-slate-600">ปี</span>
+                    </span>
+                </div>
+                <input type="range" id="ageSlider" min="0" max="100" value="30" step="1" class="mt-2">
+                <div class="flex justify-between text-xs font-bold text-slate-600 mt-2">
+                    <span class="text-sky-600">🟦 0–22 ปี</span>
+                    <span class="text-amber-600">🟨 23–60 ปี</span>
+                    <span class="text-rose-600">🟥 61–100 ปี</span>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==========================================
+             ข้อ 2 & ข้อ 3: แถวที่ 2 (ฝั่งซ้าย & ฝั่งขวา)
+             ========================================== -->
+        <div id="row2" class="row2">
+        <div class="row2-grid grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+            <!-- ฝั่งซ้าย: 2. งบกระแสเงินสด & เงินสำรอง -->
+            <section class="relative z-10 bg-white rounded-3xl p-6 cartoon-card h-full flex flex-col justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3 mb-5 border-b-2 border-slate-100 pb-3">
+                        <div class="w-10 h-10 bg-emerald-200 rounded-2xl flex items-center justify-center text-xl border-2 border-slate-800 shadow-[2px_2px_0px_#1E293B]">
+                            💵
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-emerald-600 uppercase tracking-wide">ฝั่งซ้าย</span>
+                            <h2 class="text-xl font-black text-slate-900">2. งบกระแสเงินสด & เงินสำรอง</h2>
+                        </div>
+                    </div>
+
+                    <!-- Input 1: ค่าใช้จ่ายต่อเดือน = ผลรวมของรายการย่อย (กดบวกเพิ่มได้) -->
+                    <div class="mb-4 bg-emerald-50/80 p-4 rounded-2xl cartoon-card-sm">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold text-slate-800">ค่าใช้จ่ายต่อเดือน <span class="text-emerald-600">(รวม)</span>:</span>
+                            <span class="text-base font-extrabold text-emerald-700" id="monthlyExpDisp">10,000 บาท</span>
+                        </div>
+                        <div class="item-head"><span class="h-name">รายการ</span><span class="h-amt">บาท/เดือน</span><span class="h-del"></span></div>
+                        <div id="expList" class="item-list"></div>
+                        <button type="button" id="expAdd" class="add-btn">➕ เพิ่มรายการค่าใช้จ่าย</button>
+                    </div>
+
+                    <!-- Input 2: Reserve Months -->
+                    <div class="mb-4 bg-emerald-50/80 p-4 rounded-2xl cartoon-card-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="reserveMonths" class="text-xs font-bold text-slate-800">จำนวนเดือนที่อยากสำรองไว้:</label>
+                            <span class="text-base font-extrabold text-blue-700"><span id="reserveMonthsDisp">6</span> เดือน</span>
+                        </div>
+                        <input type="range" id="reserveMonths" min="1" max="12" value="6" step="1">
+                    </div>
+                </div>
+
+                <!-- ภาพการ์ดเงินสำรอง: สำรองกี่เดือนก็มีการ์ดกี่ใบ ใบละ 1 เดือน -->
+                <div>
+                    <div class="text-xs font-extrabold text-slate-700 mb-2" id="reserveCardsLabel">🗂️ สำรอง 6 เดือน = การ์ด 6 ใบ</div>
+                    <div id="reserveCards" class="month-grid" aria-hidden="true"></div>
+                </div>
+
+                <!-- Emergency Reserve Box -->
+                <div class="bg-emerald-200 border-2 border-slate-800 p-5 rounded-2xl text-center shadow-[4px_4px_0px_#1E293B]">
+                    <span class="text-xs font-black text-slate-800 uppercase tracking-wider bg-white px-3 py-0.5 rounded-full border border-slate-800 inline-block mb-1">
+                        🛡️ เงินสำรองฉุกเฉินที่ควรมี
+                    </span>
+                    <div class="text-3xl font-black text-slate-900 my-1 break-words" id="totalReserveDisp">60,000 บาท</div>
+                    <p class="text-xs font-bold text-slate-700" id="reserveCalcFormula">(ใช้เดือนละ 10,000 บาท × สำรอง 6 เดือน)</p>
+                </div>
+            </section>
+
+            <!-- ฝั่งขวา: 3. รูปแบบเป้าหมายชีวิต — กดที่การ์ดนี้เพื่อสไลด์ "เป้าหมายทรัพย์สินชีวิต" ออกมา / เก็บกลับเข้าไป -->
+            <section id="lifeGoalCard" class="toggle-card relative z-10 bg-white rounded-3xl p-6 cartoon-card h-full flex flex-col justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3 mb-5 border-b-2 border-slate-100 pb-3">
+                        <div class="w-10 h-10 bg-purple-200 rounded-2xl flex items-center justify-center text-xl border-2 border-slate-800 shadow-[2px_2px_0px_#1E293B]">
+                            🎯
+                        </div>
+                        <div class="flex-1">
+                            <span class="text-xs font-bold text-purple-600 uppercase tracking-wide">ฝั่งขวา</span>
+                            <h2 class="text-xl font-black text-slate-900">3. รูปแบบเป้าหมายชีวิต</h2>
+                        </div>
+                        <svg class="chevron w-6 h-6 text-slate-700 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+
+                    <!-- รายการสิ่งที่อยากได้: ชื่อ - ราคาต่อเดือน (กดบวกเพิ่มได้) -->
+                    <div data-no-toggle class="bg-purple-50/80 p-4 rounded-2xl cartoon-card-sm">
+                        <div class="item-head"><span class="h-name">ชื่อสิ่งที่อยากได้</span><span class="h-amt">ราคา (บาท/เดือน)</span><span class="h-del"></span></div>
+                        <div id="lifeList" class="item-list"></div>
+                        <button type="button" id="lifeAdd" class="add-btn">➕ เพิ่มสิ่งที่อยากได้</button>
+                    </div>
+                </div>
+
+                <!-- กล่องผลรวมต่อเดือน (คู่กับกล่องเงินสำรองของการ์ด 2) -->
+                <div class="bg-purple-200 border-2 border-slate-800 p-5 rounded-2xl text-center shadow-[4px_4px_0px_#1E293B]">
+                    <span class="text-xs font-black text-slate-800 uppercase tracking-wider bg-white px-3 py-0.5 rounded-full border border-slate-800 inline-block mb-1">
+                        🎯 รวมที่อยากได้ต่อเดือน
+                    </span>
+                    <div class="text-3xl font-black text-slate-900 my-1 break-words" id="lifeTotalDisp">30,000 บาท</div>
+                    <p class="text-xs font-bold text-slate-700" id="lifeTotalNote">(รวมจาก 3 รายการ)</p>
+                </div>
+
+                <!-- แถบกดสไลด์เปิด/ปิด (ปุ่มจริง สำหรับคีย์บอร์ดและโปรแกรมอ่านหน้าจอ; กดตรงไหนของการ์ดก็สไลด์ได้) -->
+                <button type="button" id="assetToggleBar" class="toggle-bar cartoon-btn w-full flex items-center justify-center gap-2 bg-purple-200 text-slate-900 font-extrabold text-sm rounded-2xl px-4 py-3" aria-expanded="false" aria-controls="assetDrawer">
+                    <span id="assetToggleText">👆 กดการ์ดนี้ เพื่อสไลด์ดู 🌟 เป้าหมายทรัพย์สินชีวิต</span>
+                    <svg class="chevron nudge w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                </button>
+            </section>
+
+
+        </div><!-- /grid -->
+
+        <!-- ==========================================
+             เป้าหมายทรัพย์สินชีวิต — ซ่อนอยู่หลังการ์ด 3
+             กดการ์ด "รูปแบบเป้าหมายชีวิต" เพื่อสไลด์ออกมา / กดอีกครั้งเพื่อสไลด์กลับเข้าไป
+             ========================================== -->
+        <div id="assetDrawer" class="drawer" aria-hidden="true" inert>
+            <div class="drawer-clip">
+                <div class="drawer-pad">
+        <section class="drawer-card bg-white rounded-3xl p-6 sm:p-8 cartoon-card w-full">
+            <div class="flex items-center gap-3 mb-5 border-b-2 border-slate-100 pb-3">
+                <div class="w-10 h-10 bg-purple-200 rounded-2xl flex items-center justify-center text-xl border-2 border-slate-800 shadow-[2px_2px_0px_#1E293B]">🌟</div>
+                <div>
+                    <span class="text-xs font-bold text-purple-600 uppercase tracking-wide">แถวที่ 3</span>
+                    <h2 class="text-xl sm:text-2xl font-black text-slate-900">เป้าหมายทรัพย์สินชีวิต</h2>
+                </div>
+            </div>
+                <!-- Total Goal Box -->
+                <div class="bg-purple-200 border-2 border-slate-800 p-5 rounded-2xl text-center shadow-[4px_4px_0px_#1E293B] mt-2">
+                    <span class="text-xs font-black text-slate-800 uppercase tracking-wider bg-white px-3 py-0.5 rounded-full border border-slate-800 inline-block mb-1">
+                        🌟 เป้าหมายทรัพย์สินชีวิต
+                    </span>
+                    <div class="bg-emerald-100 border-2 border-slate-800 rounded-2xl p-4 mt-2 mb-4">
+                        <div class="text-xs font-bold text-slate-700">💵 รายได้เป้าหมายต่อเดือน</div>
+                        <div class="text-2xl sm:text-3xl font-black text-emerald-700 my-1 break-words" id="plannedIncomeDisp">150,000 บาท/เดือน</div>
+                        <p class="balance text-xs font-semibold text-slate-600" id="incomePlanFormula">รวมต่อเดือน 30,000 × 5 = 150,000 บาท/เดือน</p>
+                    </div>
+                    <!-- แบ่งรายได้ตามแผน: ไว้ใต้การ์ดรายได้เป้าหมาย ย่อไว้ กดหัวข้อแล้วรายละเอียดค่อยสไลด์ออกมา -->
+                    <div id="splitCard" class="collapse-card bg-white border-2 border-slate-800 rounded-2xl text-left">
+                        <button type="button" id="splitHead" class="collapse-head" aria-expanded="false" aria-controls="splitPanel">
+                            <span class="split-title text-sm font-extrabold text-slate-900">🧮 แบ่งรายได้ตามแผน 20% / 40% / 40%</span>
+                            <span class="collapse-hint"><span class="when-closed">กดดูรายละเอียด</span><span class="when-open">ซ่อนรายละเอียด</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+                        </button>
+                        <div id="splitPanel" class="collapse-panel" aria-hidden="true" inert>
+                            <div class="collapse-inner">
+                                <div class="collapse-body">
+                                    <div class="split-grid grid grid-cols-1 sm:grid-cols-3 gap-2 text-center">
+                                        <div class="bg-amber-100 rounded-xl p-3">
+                                            <div class="text-xs font-bold text-slate-700">🧡 20% รูปแบบชีวิต</div>
+                                            <div class="font-black text-lg" id="lifeShareDisp">30,000 บาท</div>
+                                        </div>
+                                        <div class="bg-emerald-100 rounded-xl p-3">
+                                            <div class="text-xs font-bold text-slate-700">💰 40% เก็บออม</div>
+                                            <div class="font-black text-lg" id="saveShareDisp">60,000 บาท</div>
+                                            <div class="text-[10px] text-slate-600">นำไปสะสมเป้าหมายทรัพย์สิน</div>
+                                        </div>
+                                        <div class="bg-rose-100 rounded-xl p-3">
+                                            <div class="text-xs font-bold text-slate-700">🧾 40% กันไว้จ่ายภาษี</div>
+                                            <div class="font-black text-lg" id="taxShareDisp">60,000 บาท</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- การ์ดเลขใหญ่: เป้าหมายระบบเงิน + สูตร -->
+                    <div id="capitalCard" class="bg-white border-2 border-slate-800 rounded-2xl text-center mt-4 p-4">
+                        <div class="text-2xl sm:text-3xl font-black text-slate-900 my-1 break-words" id="totalLifeGoalDisp">10,080,000 บาท</div>
+                        <p class="balance text-xs font-bold text-slate-700" id="lifeGoalFormula">ปีละ 360,000 + ภาษี 40% = 504,000 ÷ ผลตอบแทน 5% ต่อปี</p>
+                    </div>
+
+                    <!-- การ์ดระยะเวลา: ย่อไว้ โชว์หัวข้อกับตัวเลขปี กดแล้วสูตรและป้ายปัดปีค่อยสไลด์ออกมา -->
+                    <div id="durationCard" class="collapse-card mt-4 bg-yellow-100 border-2 border-slate-800 rounded-2xl">
+                        <button type="button" id="durationHead" class="collapse-head" aria-expanded="false" aria-controls="durationPanel">
+                            <span class="text-sm font-extrabold text-slate-900">⏳ ระยะเวลาสะสมเป้าหมาย</span>
+                            <span class="text-2xl font-black text-slate-900" id="goalDurationDisp">14 ปี</span>
+                            <span class="collapse-hint"><span class="when-closed">กดดูรายละเอียด</span><span class="when-open">ซ่อนรายละเอียด</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+                        </button>
+                        <div id="durationPanel" class="collapse-panel" aria-hidden="true" inert>
+                            <div class="collapse-inner">
+                                <div class="collapse-body text-center">
+                                    <p class="balance text-xs font-bold text-slate-700" id="goalDurationFormula">10,080,000 ÷ 60,000 บาท/เดือน = 168 เดือน (ประมาณ 5,040 วัน)</p>
+                                    <p class="text-xs font-extrabold text-slate-900 mt-2 bg-white/70 border-2 border-slate-800 rounded-xl px-3 py-1.5 inline-block" id="goalYearsRoundDisp">📌 ปัดขึ้นเป็นปีเต็ม: 14 ปี</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-600 mt-3">หมายเหตุ: เป้าหมายระบบเงิน = (รวมต่อเดือน × 12 + ภาษี 40%) ÷ ผลตอบแทนคาดหวัง 5% ต่อปี (ตามไฟล์ Excel ต้นแบบ) • สัดส่วน 40% สำหรับภาษีเป็นเงินที่กันไว้ตามแผน ไม่ใช่อัตราภาษีที่กฎหมายกำหนด • ระยะเวลาคำนวณแบบไม่รวมผลตอบแทนจากเงินออม เงินเฟ้อ และการเปลี่ยนแปลงรายได้ • สูตรนี้ผูกเป้าหมายกับรายได้จากค่าใช้จ่ายต่อเดือนตัวเดียวกัน ระยะเวลาจึงได้ 14 ปีเสมอ</p>
+                </div>
+        </section>
+                </div><!-- /drawer-pad -->
+            </div><!-- /drawer-clip -->
+        </div><!-- /drawer -->
+        </div><!-- /row2 -->
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-5xl mx-auto px-4 mt-12 text-center text-xs font-bold text-slate-400">
+        <p>😊 เว็บไซต์วางแผนชีวิตและการเงินฉบับการ์ตูน • เรียบง่าย สดใส และเข้าใจง่ายที่สุด</p>
+    </footer>
+
+
+    <!-- ==========================================
+         JAVASCRIPT LOGIC
+         ========================================== -->
+    <script>
+        // Formatting function for clean Thai numbers
+        function formatNum(num) {
+            return new Intl.NumberFormat('th-TH').format(Math.round(num));
+        }
+
+        // --- SECTION 1: CURRENT AGE SELECTOR ---
+        const ageSlider = document.getElementById('ageSlider');
+        const currentAgeText = document.getElementById('currentAgeText');
+
+        function updateSection1() {
+            currentAgeText.innerText = parseInt(ageSlider.value, 10);
+        }
+
+        ageSlider.addEventListener('input', updateSection1);
+
+
+        // ===== ตัวช่วยร่วมของการ์ด 2 และ 3: ช่องพิมพ์เงิน + รายการ "ชื่อ - จำนวนเงินต่อเดือน" ที่กดบวกเพิ่มได้ =====
+        const MAX_ITEMS = 12;                 // จำนวนรายการสูงสุดต่อการ์ด
+        const MAX_ITEM_AMOUNT = 10000000;     // จำนวนเงินสูงสุดต่อรายการ (บาท/เดือน)
+
+        // เหมือน formatNum แต่เก็บทศนิยมไว้ (ใช้โชว์ยอดที่บวกภาษีแล้ว เช่น 1,131,681.6 ให้ตรงกับ Excel)
+        function formatDec(num) {
+            return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 2 }).format(num);
+        }
+
+        // ช่องพิมพ์ตัวเลข: ใส่คอมม่าให้อัตโนมัติ เคอร์เซอร์ไม่เด้ง รับเลขไทย และจำกัดค่าสูงสุด
+        const THAI_DIGITS = '๐๑๒๓๔๕๖๗๘๙';
+        function digitsFromText(text) {
+            return text.split('.')[0]
+                .replace(/[๐-๙]/g, d => THAI_DIGITS.indexOf(d))
+                .replace(/\D/g, '');
+        }
+
+        // onValue(n): เรียกทุกครั้งที่พิมพ์ / onCommit(): เรียกตอนออกจากช่อง (ไว้จัดรูปแบบช่องให้เรียบร้อย)
+        function bindMoneyInput(input, max, onValue, onCommit) {
+            let typedSinceFocus = false;
+            input.addEventListener('input', () => {
+                typedSinceFocus = true;
+                const caret = input.selectionStart == null ? input.value.length : input.selectionStart;
+                const digitsBefore = digitsFromText(input.value.slice(0, caret)).length;
+                const digits = digitsFromText(input.value).replace(/^0+(?=\d)/, '');
+                const n = digits === '' ? 0 : Math.min(parseInt(digits, 10), max);
+                input.value = digits === '' ? '' : formatNum(n);
+                // คืนเคอร์เซอร์ไปหลังตัวเลขตัวเดิม (ไม่กระโดดไปท้ายช่องตอนคอมม่าถูกเพิ่ม)
+                let pos = 0, seen = 0;
+                while (pos < input.value.length && seen < digitsBefore) {
+                    if (/\d/.test(input.value[pos])) seen++;
+                    pos++;
+                }
+                input.setSelectionRange(pos, pos);
+                onValue(n);
+            });
+            // โฟกัสแล้วเลือกทั้งช่อง (พิมพ์ทับได้เลย) แต่ถ้าเริ่มพิมพ์ไปแล้วห้ามเลือกซ้ำ ไม่งั้นตัวที่พิมพ์ไว้จะถูกทับ
+            input.addEventListener('focus', () => {
+                typedSinceFocus = false;
+                setTimeout(() => { if (!typedSinceFocus && document.activeElement === input) input.select(); }, 0);
+            });
+            input.addEventListener('blur', () => { if (onCommit) onCommit(); });
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });   // กด Enter = พิมพ์เสร็จ
+        }
+
+        // อีโมจิหน้าแถว เปลี่ยนตามชื่อที่พิมพ์ (ไม่เข้าคำไหนก็ใช้ค่าตั้งต้นของการ์ดนั้น)
+        const EMOJI_RULES = [
+            [/บ้าน|คอนโด|ค่าเช่า/, '🏠'],
+            [/รถ|น้ำมัน/, '🚗'],
+            [/หนี้|ผ่อน|บัตรเครดิต|สินเชื่อ/, '💳'],
+            [/ครองชีพ|อาหาร|ข้าว/, '🍜'],
+            [/เที่ยว/, '✈️'],
+            [/เรียน|การศึกษา/, '🎓'],
+            [/ประกัน|สุขภาพ/, '🩺'],
+            [/ค่าไฟ|ค่าน้ำ|เน็ต|โทรศัพท์/, '💡'],
+        ];
+        function rowEmoji(name, fallback) {
+            const hit = EMOJI_RULES.find(rule => rule[0].test(name));
+            return hit ? hit[1] : fallback;
+        }
+
+        // รายการ "ชื่อ - จำนวนเงินต่อเดือน": เพิ่ม/ลบแถวได้ แก้ไขแล้วเรียก onChange ให้การ์ดคำนวณใหม่
+        // cfg = { listEl, addBtn, items:[{name, amount}], what, defaultEmoji, namePlaceholder, amountClass,
+        //         addLabel, maxItems, maxAmount, onChange }
+        function createItemList(cfg) {
+            const state = [];
+
+            const emptyEl = document.createElement('div');
+            emptyEl.className = 'item-empty';
+            emptyEl.textContent = 'ยังไม่มีรายการ — กดปุ่ม ➕ ด้านล่างเพื่อเพิ่ม';
+            cfg.listEl.appendChild(emptyEl);
+
+            const total = () => state.reduce((sum, it) => sum + it.amount, 0);
+
+            // ป้ายกำกับสำหรับโปรแกรมอ่านหน้าจอ + สถานะปุ่มเพิ่ม + ข้อความตอนไม่มีรายการ
+            function refresh() {
+                emptyEl.hidden = state.length > 0;
+                const full = state.length >= cfg.maxItems;
+                cfg.addBtn.disabled = full;
+                cfg.addBtn.textContent = full ? `ครบ ${cfg.maxItems} รายการแล้ว` : cfg.addLabel;
+                cfg.listEl.querySelectorAll('.item-row').forEach((row, i) => {
+                    row.querySelector('.item-name').setAttribute('aria-label', `${cfg.what} รายการที่ ${i + 1}: ชื่อ`);
+                    row.querySelector('.num-field').setAttribute('aria-label', `${cfg.what} รายการที่ ${i + 1}: จำนวนเงินต่อเดือน (บาท)`);
+                    row.querySelector('.item-del').setAttribute('aria-label', `ลบรายการที่ ${i + 1}`);
+                });
+            }
+
+            function addRow(item, isNew) {
+                const row = document.createElement('div');
+                row.className = 'item-row' + (isNew ? ' is-new' : '');
+
+                const emoji = document.createElement('span');
+                emoji.className = 'item-emoji';
+                emoji.setAttribute('aria-hidden', 'true');
+                emoji.textContent = rowEmoji(item.name, cfg.defaultEmoji);
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.className = 'item-name';
+                nameInput.maxLength = 24;
+                nameInput.autocomplete = 'off';
+                nameInput.enterKeyHint = 'next';
+                nameInput.placeholder = cfg.namePlaceholder;
+                nameInput.value = item.name;
+
+                const amountInput = document.createElement('input');
+                amountInput.type = 'text';
+                amountInput.inputMode = 'numeric';
+                amountInput.autocomplete = 'off';
+                amountInput.enterKeyHint = 'done';
+                amountInput.className = 'num-field' + (cfg.amountClass ? ' ' + cfg.amountClass : '');
+                amountInput.placeholder = '0';
+                amountInput.value = item.amount ? formatNum(item.amount) : '';
+
+                const del = document.createElement('button');
+                del.type = 'button';
+                del.className = 'item-del';
+                del.textContent = '✕';
+
+                nameInput.addEventListener('input', () => {
+                    item.name = nameInput.value;
+                    emoji.textContent = rowEmoji(item.name, cfg.defaultEmoji);
+                    cfg.onChange();
+                });
+                nameInput.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') { e.preventDefault(); amountInput.focus(); }   // Enter = ไปช่องราคาต่อ
+                });
+                bindMoneyInput(
+                    amountInput,
+                    cfg.maxAmount,
+                    n => { item.amount = n; cfg.onChange(); },
+                    () => { amountInput.value = item.amount ? formatNum(item.amount) : ''; }
+                );
+                del.addEventListener('click', () => {
+                    const idx = state.indexOf(item);
+                    state.splice(idx, 1);
+                    row.remove();
+                    refresh();
+                    cfg.onChange();
+                    // คืนโฟกัสให้คีย์บอร์ดไม่หลุด: ไปที่ปุ่มลบของแถวที่เลื่อนขึ้นมาแทน หรือปุ่มเพิ่มถ้าไม่เหลือแถว
+                    const rows = cfg.listEl.querySelectorAll('.item-row');
+                    const next = rows[Math.min(idx, rows.length - 1)];
+                    (next ? next.querySelector('.item-del') : cfg.addBtn).focus();
+                });
+
+                row.append(emoji, nameInput, amountInput, del);
+                cfg.listEl.appendChild(row);
+                return row;
+            }
+
+            cfg.addBtn.addEventListener('click', () => {
+                if (state.length >= cfg.maxItems) return;
+                const item = { name: '', amount: 0 };
+                state.push(item);
+                const row = addRow(item, true);
+                refresh();
+                cfg.onChange();
+                row.querySelector('.item-name').focus();   // เพิ่มแล้วพิมพ์ชื่อต่อได้เลย
+            });
+
+            cfg.items.forEach(it => {
+                const item = { name: it.name, amount: it.amount };
+                state.push(item);
+                addRow(item, false);
+            });
+            refresh();
+
+            return { items: state, total, count: () => state.length };
+        }
+
+
+        // --- SECTION 2: CASH FLOW & RESERVE ---
+        const monthlyExpDisp = document.getElementById('monthlyExpDisp');
+        const reserveMonths = document.getElementById('reserveMonths');
+        const reserveMonthsDisp = document.getElementById('reserveMonthsDisp');
+        const reserveCards = document.getElementById('reserveCards');
+        const reserveCardsLabel = document.getElementById('reserveCardsLabel');
+        const totalReserveDisp = document.getElementById('totalReserveDisp');
+        const reserveCalcFormula = document.getElementById('reserveCalcFormula');
+
+        // ค่าใช้จ่ายต่อเดือน = ผลรวมของรายการย่อย (จ่ายบ้าน + จ่ายหนี้ + ... กดบวกเพิ่มได้)
+        const expList = createItemList({
+            listEl: document.getElementById('expList'),
+            addBtn: document.getElementById('expAdd'),
+            items: [{ name: 'จ่ายบ้าน', amount: 5000 }, { name: 'จ่ายหนี้', amount: 5000 }],
+            what: 'ค่าใช้จ่าย',
+            defaultEmoji: '💸',
+            namePlaceholder: 'ชื่อ เช่น ค่าเน็ต',
+            amountClass: 'emerald',
+            addLabel: '➕ เพิ่มรายการค่าใช้จ่าย',
+            maxItems: MAX_ITEMS,
+            maxAmount: MAX_ITEM_AMOUNT,
+            onChange: () => updateSection2(),
+        });
+
+        // ภาพการ์ดเงินสำรอง: สำรองกี่เดือนก็มีการ์ดกี่ใบ (ใบละ 1 เดือน)
+        // ใบที่เพิ่มใหม่จะเด้งขึ้นมา ใบที่มีอยู่แล้วไม่เด้งซ้ำตอนพิมพ์ตัวเลขหรือเลื่อนสไลเดอร์
+        function renderReserveCards(months, exp) {
+            while (reserveCards.children.length > months) reserveCards.lastElementChild.remove();
+            const firstNew = reserveCards.children.length;
+            while (reserveCards.children.length < months) {
+                const i = reserveCards.children.length;
+                const card = document.createElement('div');
+                card.className = 'month-card mc-' + (i % 6);
+                card.style.animationDelay = ((i - firstNew) * 45) + 'ms';
+                card.innerHTML = '<div class="mc-title">เดือนที่ ' + (i + 1) + '</div><div class="mc-amt"></div>';
+                reserveCards.appendChild(card);
+            }
+            const amountText = formatNum(exp);
+            reserveCards.querySelectorAll('.mc-amt').forEach(el => { el.textContent = amountText; });
+            reserveCardsLabel.textContent = `🗂️ สำรอง ${months} เดือน = การ์ด ${months} ใบ`;
+            fitMonthAmounts();
+        }
+
+        // ตัวเลขยาวมาก (เช่น 120,000,000 บนจอเล็ก) ให้ลดขนาดตัวอักษรของการ์ดทุกใบเท่ากัน แทนที่จะถูกตัดท้ายด้วย "…"
+        function fitMonthAmounts() {
+            const els = reserveCards.querySelectorAll('.mc-amt');
+            if (!els.length) return;
+            const probe = els[0];
+            let size = 14;
+            probe.style.fontSize = size + 'px';
+            if (probe.clientWidth > 0) {
+                while (probe.scrollWidth > probe.clientWidth && size > 8) {
+                    size -= 0.5;
+                    probe.style.fontSize = size + 'px';
+                }
+            }
+            els.forEach(el => { el.style.fontSize = size + 'px'; });
+        }
+        window.addEventListener('resize', fitMonthAmounts);
+
+        function updateSection2() {
+            const exp = expList.total();
+            const months = parseInt(reserveMonths.value, 10);
+            monthlyExpDisp.textContent = formatNum(exp) + ' บาท';
+            reserveMonthsDisp.textContent = months;
+
+            const totalReserve = exp * months;
+            totalReserveDisp.textContent = formatNum(totalReserve) + ' บาท';
+            reserveCalcFormula.textContent = `(ใช้เดือนละ ${formatNum(exp)} บาท × สำรอง ${months} เดือน)`;
+            renderReserveCards(months, exp);
+        }
+
+        reserveMonths.addEventListener('input', updateSection2);
+
+
+        // --- SECTION 3: รูปแบบเป้าหมายชีวิต (รายการ ชื่อ - ราคาต่อเดือน) + เป้าหมายทรัพย์สินชีวิต (การ์ดที่ซ่อนอยู่ในลิ้นชัก) ---
+        // สูตรตามไฟล์ Excel ต้นแบบ (ชีต1)
+        //   รวมต่อเดือน (C12)        = ผลรวมของรายการ (บ้าน + รถ + ครองชีพ + ...)
+        //   ต่อปี (C16)              = รวมต่อเดือน × 12
+        //   รวมภาษี (C17)            = ต่อปี + ต่อปี × 40%
+        //   เป้าหมายระบบเงิน (C20)   = รวมภาษี ÷ 0.05  (เท่ากับ รวมต่อเดือน × 336)  <- "เลขใหญ่" ที่โชว์ในการ์ดเป้าหมายทรัพย์สินชีวิต
+        //   รายได้ที่ต้องหา (C19)    = รวมต่อเดือน × 5  แบ่ง 20% ใช้ชีวิต / 40% ลงทุน / 40% ภาษี
+        //   ระยะเวลา (D25)           = ROUNDUP((เป้าหมาย ÷ ลงทุนต่อเดือน) ÷ 12) ปี
+        const TAX_PCT = 40;
+        const RETURN_PCT = 5;
+        const INCOME_MULTIPLIER = 5;
+        const SPLIT_LIFE_PCT = 20, SPLIT_SAVE_PCT = 40, SPLIT_TAX_PCT = 40;
+        const CAPITAL_FACTOR = 12 * (100 + TAX_PCT) / RETURN_PCT;   // 12 × 140 ÷ 5 = 336 (คิดเป็นจำนวนเต็ม ไม่มีเศษทศนิยมสะสม)
+
+        const lifeTotalDisp = document.getElementById('lifeTotalDisp');
+        const lifeTotalNote = document.getElementById('lifeTotalNote');
+        const totalLifeGoalDisp = document.getElementById('totalLifeGoalDisp');
+        const lifeGoalFormula = document.getElementById('lifeGoalFormula');
+        const incomePlanFormula = document.getElementById('incomePlanFormula');
+        const plannedIncomeDisp = document.getElementById('plannedIncomeDisp');
+        const lifeShareDisp = document.getElementById('lifeShareDisp');
+        const saveShareDisp = document.getElementById('saveShareDisp');
+        const taxShareDisp = document.getElementById('taxShareDisp');
+        const goalDurationDisp = document.getElementById('goalDurationDisp');
+        const goalDurationFormula = document.getElementById('goalDurationFormula');
+        const goalYearsRoundDisp = document.getElementById('goalYearsRoundDisp');
+
+        // ตัวตั้งต้นของทุกตัวเลข: รวมราคาต่อเดือนของสิ่งที่อยากได้ (เลขใหญ่ = รวมต่อเดือน × 336 เสมอ)
+        const lifeList = createItemList({
+            listEl: document.getElementById('lifeList'),
+            addBtn: document.getElementById('lifeAdd'),
+            items: [{ name: 'บ้าน', amount: 10000 }, { name: 'รถ', amount: 10000 }, { name: 'ครองชีพ', amount: 10000 }],
+            what: 'สิ่งที่อยากได้',
+            defaultEmoji: '🌟',
+            namePlaceholder: 'ชื่อ เช่น ท่องเที่ยว',
+            amountClass: '',
+            addLabel: '➕ เพิ่มสิ่งที่อยากได้',
+            maxItems: MAX_ITEMS,
+            maxAmount: MAX_ITEM_AMOUNT,
+            onChange: () => updateSection3(),
+        });
+
+        function updateSection3() {
+            const monthly = lifeList.total();
+            lifeTotalDisp.textContent = formatNum(monthly) + ' บาท';
+            lifeTotalNote.textContent = lifeList.count() ? `(รวมจาก ${lifeList.count()} รายการ)` : '(ยังไม่มีรายการ)';
+
+            const yearly = monthly * 12;
+            const yearlyWithTax = yearly * (100 + TAX_PCT) / 100;
+            const capital = monthly * CAPITAL_FACTOR;     // = yearlyWithTax ÷ 0.05
+
+            // ---- การ์ดเป้าหมายทรัพย์สินชีวิต (ซ่อนอยู่ในลิ้นชัก) ----
+            totalLifeGoalDisp.textContent = formatNum(capital) + ' บาท';
+            lifeGoalFormula.textContent = `ปีละ ${formatNum(yearly)} + ภาษี ${TAX_PCT}% = ${formatDec(yearlyWithTax)} ÷ ผลตอบแทน ${RETURN_PCT}% ต่อปี`;
+
+            // รายได้ที่ต้องหาต่อเดือน = รวมต่อเดือน × 5 แบ่ง 20 / 40 / 40 (คูณก่อนหาร จะได้จำนวนเต็มตรงๆ ไม่มีเศษ)
+            const plannedIncome = monthly * INCOME_MULTIPLIER;
+            const lifestyleShare = plannedIncome * SPLIT_LIFE_PCT / 100;
+            const savingsShare = plannedIncome * SPLIT_SAVE_PCT / 100;
+            const taxShare = plannedIncome * SPLIT_TAX_PCT / 100;
+
+            plannedIncomeDisp.textContent = formatNum(plannedIncome) + ' บาท/เดือน';
+            incomePlanFormula.textContent = `รวมต่อเดือน ${formatNum(monthly)} × ${INCOME_MULTIPLIER} = ${formatNum(plannedIncome)} บาท/เดือน`;
+            lifeShareDisp.textContent = formatNum(lifestyleShare) + ' บาท';
+            saveShareDisp.textContent = formatNum(savingsShare) + ' บาท';
+            taxShareDisp.textContent = formatNum(taxShare) + ' บาท';
+
+            // ระยะเวลา: ลงทุน 40% ทุกเดือน ไม่รวมผลตอบแทนและเงินเฟ้อ (ลบ 1e-9 กันเศษทศนิยมทำให้ปัดขึ้นเกิน)
+            if (savingsShare > 0 && capital > 0) {
+                const exactMonths = capital / savingsShare;
+                const totalMonths = Math.ceil(exactMonths - 1e-9);
+                const years = Math.floor(totalMonths / 12);
+                const months = totalMonths % 12;
+                const roundedYears = Math.ceil(exactMonths / 12 - 1e-9);
+                const durationParts = [];
+                if (years > 0) durationParts.push(`${years} ปี`);
+                if (months > 0) durationParts.push(`${months} เดือน`);
+                if (durationParts.length === 0) durationParts.push('น้อยกว่า 1 เดือน');
+                goalDurationDisp.textContent = durationParts.join(' ');
+                goalDurationFormula.textContent = `${formatNum(capital)} ÷ ${formatNum(savingsShare)} บาท/เดือน = ${formatNum(totalMonths)} เดือน (ประมาณ ${formatNum(totalMonths * 30)} วัน)`;
+                goalYearsRoundDisp.textContent = `📌 ปัดขึ้นเป็นปีเต็ม: ${formatNum(roundedYears)} ปี`;
+            } else {
+                goalDurationDisp.textContent = 'คำนวณไม่ได้';
+                goalDurationFormula.textContent = 'กรุณาตรวจสอบราคาของสิ่งที่อยากได้ต่อเดือน';
+                goalYearsRoundDisp.textContent = '📌 ใส่ราคาสิ่งที่อยากได้ต่อเดือนอย่างน้อย 1 รายการ เพื่อคำนวณระยะเวลา';
+            }
+        }
+
+
+        // --- กดการ์ด "รูปแบบเป้าหมายชีวิต" → การ์ด "เป้าหมายทรัพย์สินชีวิต" สไลด์ออกมา / กดอีกครั้งสไลด์กลับเข้าไป ---
+        //   จอกว้าง (>= 1536px): สไลด์ออกไปทาง "ขวา" (animate ความกว้าง)  จอเล็กกว่านั้น: สไลด์ลงด้านล่าง (animate ความสูง)
+        const lifeGoalCard = document.getElementById('lifeGoalCard');
+        const assetDrawer = document.getElementById('assetDrawer');
+        const assetToggleBar = document.getElementById('assetToggleBar');
+        const assetToggleText = document.getElementById('assetToggleText');
+        const TOGGLE_TEXT = {
+            side:  { closed: '👉 กดการ์ดนี้ เพื่อสไลด์ดู 🌟 เป้าหมายทรัพย์สินชีวิต', open: '👈 กดอีกครั้ง เพื่อสไลด์เก็บกลับเข้าไป' },
+            stack: { closed: '👆 กดการ์ดนี้ เพื่อสไลด์ดู 🌟 เป้าหมายทรัพย์สินชีวิต', open: '👇 กดอีกครั้ง เพื่อสไลด์เก็บกลับเข้าไป' },
+        };
+        const CONTROL_SELECTOR = 'input, label, select, textarea, [data-no-toggle]';
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const sideQuery = window.matchMedia('(min-width: 1536px)');   // ต้องตรงกับ media query ใน CSS
+        let sideMode = sideQuery.matches;
+        let drawerOpen = false;
+        let settleTimer = null;
+        let scrollTimer = null;
+
+        const drawerProp = () => (sideMode ? 'width' : 'height');
+        // ขนาดจริงของการ์ดในลิ้นชักตามแกนที่สไลด์ (วัดจากกล่องด้านในซึ่งไม่ถูกบีบตามลิ้นชัก)
+        const drawerSize = () => (sideMode ? assetDrawer.firstElementChild.offsetWidth : assetDrawer.firstElementChild.offsetHeight);
+
+        function updateToggleText() {
+            const t = TOGGLE_TEXT[sideMode ? 'side' : 'stack'];
+            assetToggleText.textContent = drawerOpen ? t.open : t.closed;
+        }
+
+        // ตอนอยู่นิ่งให้ขนาดเป็น auto (เนื้อหาเปลี่ยน/ย่อขยายหน้าต่างแล้วยังพอดี)
+        function settleDrawer() { if (drawerOpen) assetDrawer.style[drawerProp()] = 'auto'; }
+        assetDrawer.addEventListener('transitionend', e => {
+            if (e.target === assetDrawer && e.propertyName === drawerProp()) settleDrawer();
+        });
+
+        function setDrawer(open) {
+            drawerOpen = open;
+            assetDrawer.classList.toggle('is-open', open);
+            lifeGoalCard.classList.toggle('is-open', open);
+            assetToggleBar.setAttribute('aria-expanded', String(open));
+            updateToggleText();
+            assetDrawer.setAttribute('aria-hidden', String(!open));
+            if (open) assetDrawer.removeAttribute('inert'); else assetDrawer.setAttribute('inert', '');
+
+            // transition ของ width/height ต้องมีตัวเลข px ทั้งต้นทางและปลายทาง จึงวัดขนาดจริงก่อนแล้วค่อยสั่งขยาย/หด
+            const prop = drawerProp();
+            clearTimeout(settleTimer);
+            if (reduceMotion.matches) {
+                assetDrawer.style[prop] = open ? 'auto' : '0px';
+            } else if (open) {
+                assetDrawer.style[prop] = drawerSize() + 'px';
+                settleTimer = setTimeout(settleDrawer, 900);      // เผื่อ transitionend ไม่ยิง (เช่นแท็บถูกซ่อน)
+            } else {
+                assetDrawer.style[prop] = assetDrawer.getBoundingClientRect()[prop] + 'px';   // เริ่มจากขนาดตอนนี้
+                void assetDrawer.offsetHeight;                                                // บังคับ reflow ให้ transition เริ่มจากตัวเลข
+                assetDrawer.style[prop] = '0px';
+            }
+
+            clearTimeout(scrollTimer);
+            if (open && !sideMode) {
+                // ถ้าการ์ดที่สไลด์ลงมาอยู่ต่ำกว่าขอบจอ (เช่นบนมือถือ) ให้เลื่อนหน้าตามลงไปหลังสไลด์เสร็จ
+                scrollTimer = setTimeout(() => {
+                    const top = assetDrawer.getBoundingClientRect().top;
+                    if (top > window.innerHeight * 0.55) {
+                        window.scrollBy({ top: top - 72, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+                    }
+                }, 700);
+            }
+        }
+
+        // ย่อ/ขยายหน้าต่างข้ามขอบ 1536px ขณะเปิดอยู่: เปลี่ยนทิศทางสไลด์ ล้างขนาดเดิมของอีกแกนแล้วให้พอดีเนื้อหา
+        function onModeChange() {
+            sideMode = sideQuery.matches;
+            clearTimeout(settleTimer);
+            assetDrawer.style.height = '';
+            assetDrawer.style.width = '';
+            if (drawerOpen) assetDrawer.style[drawerProp()] = 'auto';
+            updateToggleText();
+        }
+        if (sideQuery.addEventListener) sideQuery.addEventListener('change', onModeChange);
+        else sideQuery.addListener(onModeChange);
+
+        // กดตรงไหนของการ์ดก็สลับเปิด/ปิดได้ ยกเว้นช่องกรอก รายการ และกล่องควบคุม (กันเผลอสไลด์ตอนพิมพ์/กดบวก/กดลบ)
+        // ใช้ composedPath เพราะปุ่มลบอาจถูกถอดออกจากหน้าไปแล้วตอนที่เหตุการณ์ click ลอยมาถึงการ์ด
+        const inControl = e => e.composedPath().some(n => n instanceof Element && n.matches(CONTROL_SELECTOR));
+        let pressedInControl = false;
+        lifeGoalCard.addEventListener('pointerdown', e => { pressedInControl = inControl(e); });
+        lifeGoalCard.addEventListener('keydown', () => { pressedInControl = false; });
+        lifeGoalCard.addEventListener('click', e => {
+            const skip = pressedInControl || inControl(e);
+            pressedInControl = false;
+            if (skip) return;
+            if (String(window.getSelection()).trim() !== '') return;   // กำลังลากคลุมข้อความ ไม่ต้องสลับ
+            setDrawer(!drawerOpen);
+        });
+
+
+        // --- การ์ดที่ย่อไว้ (🧮 แบ่งรายได้ / ⏳ ระยะเวลา): กดหัวการ์ดแล้วรายละเอียดค่อยสไลด์ออกมา กดอีกครั้งเก็บกลับ ---
+        function bindCollapse(head) {
+            const panel = document.getElementById(head.getAttribute('aria-controls'));
+            function set(open) {
+                head.setAttribute('aria-expanded', String(open));
+                panel.classList.toggle('is-open', open);
+                panel.setAttribute('aria-hidden', String(!open));
+                if (open) panel.removeAttribute('inert'); else panel.setAttribute('inert', '');
+            }
+            head.addEventListener('click', () => set(head.getAttribute('aria-expanded') !== 'true'));
+            set(false);
+        }
+        document.querySelectorAll('.collapse-head').forEach(bindCollapse);
+
+
+        // Initial Load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSection1();
+            updateSection2();
+            updateSection3();
+            setDrawer(false);
+        });
+    </script>
+</body>
+</html>
